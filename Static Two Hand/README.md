@@ -524,7 +524,7 @@ contain the best checkpoint from each cross-validation fold.
 ```text
 final_model.keras
 ```
-
+The 'final_model.keras' is available on Zenodo: https://doi.org/10.5281/zenodo.22944642
 contains the model trained using the complete pooled training/validation data and is the model intended for final evaluation and Streamlit deployment.
 
 ## Model summaries
@@ -656,6 +656,7 @@ classes.json
 class_indices.json
 config.json
 ```
+The 'final_model.keras' is available on Zenodo: https://doi.org/10.5281/zenodo.22944642
 
 A recommended project layout is:
 
