@@ -693,7 +693,7 @@ The dataset is currently not publicly redistributed in this repository. Dataset 
 
 ---
 
-# 📌 Citation
+# Citation
 
 If you use the code or methodology from this repository in your research, please cite the corresponding research work associated with this project.
 
