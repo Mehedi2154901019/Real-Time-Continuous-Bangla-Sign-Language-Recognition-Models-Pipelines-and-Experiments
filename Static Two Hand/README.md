@@ -1,466 +1,199 @@
-# BdSL49_Updated_2026: MobileNetV2 Cross-Validation & Real-Time Recognition
+# BdSL49 Updated 2026 — MobileNetV2 with Cross-Validation
 
-A reproducible deep-learning pipeline for **static two-hand Bangla Sign Language (BdSL) recognition** using **ImageNet-pretrained MobileNetV2**, 3-fold stratified cross-validation, lightweight data augmentation, and a real-time Streamlit inference pipeline.
+Static **two-hand Bangla Sign Language (BdSL)** recognition using **ImageNet-pretrained MobileNetV2**, with the first 50 backbone layers frozen and 3-fold stratified cross-validation.
 
-The repository is intended for **research reproducibility, baseline comparison, and future extension**.
+## Dataset
 
----
+**BdSL49_Updated_2026**
 
-## 1. Dataset
+* 49 static two-hand Bangla Sign Language classes
+* Train / validation / test splits
+* Input size: `224 × 224 × 3`
+* Dataset DOI: https://doi.org/10.5281/zenodo.22930407
 
-The experiments use the **BdSL49_Updated_2026** dataset containing **49 Bangla Sign Language classes**.
-
-**Zenodo DOI:** https://doi.org/10.5281/zenodo.22930407
-
-Download the dataset from Zenodo before running the training notebook.
-
-After extraction, the required structure is:
+Expected dataset structure:
 
 ```text
-project/
-├── mobilentv2_First50FrozenLayers_cross_validation.ipynb
-├── app.py
-├── requirements.txt
-│
-└── bdsl49_updated_2026/
-    ├── train/
-    │   ├── class_01/
-    │   ├── class_02/
-    │   └── ...
-    │
-    ├── val/
-    │   ├── class_01/
-    │   ├── class_02/
-    │   └── ...
-    │
-    └── test/
-        ├── class_01/
-        ├── class_02/
-        └── ...
-````
-
-The `train`, `val`, and `test` directories should each contain the 49 class folders.
-
-The notebook discovers and sorts the class names automatically.
-
----
-
-## 2. Repository Contents
-
-```text
-.
-├── README.md
-├── requirements.txt
-├── mobilentv2_First50FrozenLayers_cross_validation.ipynb
-├── app.py
-└── bdsl49_results/
-    ├── classes.json
-    ├── class_indices.json
-    ├── config.json
-    ├── cv_results.json
-    ├── test_results.json
-    ├── final_model.keras
-    ├── best_fold_1.keras
-    ├── best_fold_2.keras
-    ├── best_fold_3.keras
-    ├── model_summary_fold1.txt
-    ├── model_summary_fold2.txt
-    ├── model_summary_fold3.txt
-    ├── final_model_summary.txt
-    └── confusion_matrix.png
+bdsl49_updated_2026/
+├── train/
+├── val/
+└── test/
 ```
 
-Large datasets and model files do not need to be committed to GitHub. The dataset is distributed through Zenodo, while the final trained model is also available through Zenodo as described below.
+Each split contains the 49 class directories. The notebook automatically discovers and sorts the class names.
 
 ---
 
-## 3. Model
-
-The classifier uses **MobileNetV2 pretrained on ImageNet** with the first 50 backbone layers frozen.
-
-Input:
+## Repository Contents
 
 ```text
-224 × 224 × 3 RGB image
+Static Two Hand/
+├── mobilentv2_First50FrozenLayers_cross_validation.ipynb
+├── app.py
+├── readme.md
+├── class_indices.json
+├── classes.json
+├── config.json
+└── requirements.txt
 ```
 
-Architecture:
+The trained `final_model.keras` is **not included in GitHub** because it exceeds GitHub's file-size limit.
+
+It is available on Zenodo:
+
+**Final model:** https://doi.org/10.5281/zenodo.22944642
+
+---
+
+## Model Architecture
+
+The classifier uses ImageNet-pretrained MobileNetV2 with the first 50 backbone layers frozen.
 
 ```text
-MobileNetV2
-     ↓
+Input: 224 × 224 × 3
+        ↓
+MobileNetV2 (ImageNet pretrained)
+        ↓
 Global Average Pooling
-     ↓
+        ↓
 Dense(256, ReLU)
-     ↓
+        ↓
 Dropout(0.3)
-     ↓
+        ↓
 Dense(49, Softmax)
 ```
 
-Training configuration:
+### Training Configuration
 
-```text
-Optimizer:              Adam
-Learning rate:          1e-4
-Loss:                   Sparse Categorical Crossentropy
-Maximum epochs:         20
-Cross-validation:       3-fold Stratified
-Frozen backbone:        First 50 MobileNetV2 layers
-```
+* Optimizer: Adam
+* Learning rate: `1e-4`
+* Loss: Sparse Categorical Crossentropy
+* Maximum epochs: `20`
+* Cross-validation: 3-fold StratifiedKFold
+* Shuffle: `True`
+* Random state: `42`
+* Frozen backbone layers: First `50`
+* Data augmentation:
 
----
-
-## 4. Image Preprocessing and Augmentation
-
-Images are resized to:
-
-```text
-224 × 224
-```
-
-The training pipeline uses the official MobileNetV2 preprocessing:
-
-```python
-tensorflow.keras.applications.mobilenet_v2.preprocess_input
-```
-
-Training augmentation consists of:
-
-```text
-Random horizontal flip
-Random brightness adjustment
-```
-
-No augmentation is applied during independent test evaluation.
+  * Random horizontal flip
+  * Random brightness
+* MobileNetV2 `preprocess_input`
+* Early stopping and model checkpointing
 
 ---
 
-## 5. Installation
+## Installation
 
-### Clone the repository
-
-```bash
-git clone <GITHUB-REPOSITORY-URL>
-cd <REPOSITORY-DIRECTORY>
-```
-
-### Create a virtual environment
-
-**Windows:**
+Python dependencies are listed in `requirements.txt`.
 
 ```bash
-python -m venv venv
-venv\Scripts\activate
-```
-
-**Linux/macOS:**
-
-```bash
-python3 -m venv venv
-source venv/bin/activate
-```
-
-### Install dependencies
-
-```bash
-pip install --upgrade pip
 pip install -r requirements.txt
 ```
 
-The main dependencies are:
-
-```text
-TensorFlow / Keras
-scikit-learn
-NumPy
-Pandas
-Matplotlib
-Seaborn
-OpenCV
-MediaPipe
-Streamlit
-psutil
-```
-
-For reproducibility, it is recommended to record the Python version, TensorFlow/Keras version, operating system, GPU, CUDA/cuDNN versions, and dataset version.
+For training/reproduction, ensure that the dataset is downloaded from Zenodo and that the dataset path used by the notebook matches the extracted directory.
 
 ---
 
-## 6. Reproducing Training
+## Reproducing the Experiments
 
-The main training notebook is:
+Open:
 
 ```text
 mobilentv2_First50FrozenLayers_cross_validation.ipynb
 ```
 
-Before running it, ensure that the notebook can access:
+The notebook performs the following:
 
-```text
-bdsl49_updated_2026/
-    train/
-    val/
-    test/
-```
+1. Loads the BdSL49 dataset.
+2. Discovers the 49 class labels.
+3. Applies MobileNetV2 preprocessing and augmentation.
+4. Performs 3-fold stratified cross-validation.
+5. Freezes the first 50 MobileNetV2 layers.
+6. Trains the classification head.
+7. Saves the best model for each fold.
+8. Evaluates the final model on the independent test set.
+9. Generates evaluation results and confusion matrices.
 
-The notebook performs the following workflow:
-
-```text
-Dataset
-   ↓
-Load train / validation / test images
-   ↓
-Combine train + validation for cross-validation
-   ↓
-3-fold stratified cross-validation
-   ↓
-MobileNetV2 transfer learning
-   ↓
-First 50 layers frozen
-   ↓
-Data augmentation
-   ↓
-Best model saved for each fold
-   ↓
-Final model trained on pooled train + validation data
-   ↓
-Independent test evaluation
-   ↓
-Metrics + confusion matrix + model artifacts
-```
-
-### Cross-validation
-
-The training/validation data are combined for:
-
-```text
-3-fold StratifiedKFold
-shuffle=True
-random_state=42
-```
-
-Each fold starts with a new MobileNetV2 model.
-
-The best checkpoint from each fold is saved as:
-
-```text
-best_fold_1.keras
-best_fold_2.keras
-best_fold_3.keras
-```
+For reproducibility, record the Python/TensorFlow versions, hardware, operating system, dataset version, random seed, and Git commit used for an experiment.
 
 ---
 
-## 7. Final Model and Evaluation
+## Final Model
 
-After cross-validation, the final model is trained using the combined training and validation data.
+The final trained model is provided separately because its size exceeds GitHub's file-size limit.
 
-The independent test set is then evaluated separately.
+**Download:** https://doi.org/10.5281/zenodo.22944642
 
-The pipeline reports:
-
-* Accuracy
-* Macro precision
-* Macro recall
-* F1-score
-* Confusion matrix
-
-The final deployment model is:
+After downloading, place the model in the project directory:
 
 ```text
-final_model.keras
+Static Two Hand/
+├── app.py
+├── final_model.keras
+├── classes.json
+├── class_indices.json
+├── config.json
+└── requirements.txt
 ```
 
-A copy of the final model is available through Zenodo:
-
-[https://doi.org/10.5281/zenodo.22944642](https://doi.org/10.5281/zenodo.22944642)
+The JSON files provide the class and configuration information required by the real-time application.
 
 ---
 
-## 8. Generated Artifacts
+## Real-Time Recognition
 
-The training notebook generates:
+`app.py` provides a Streamlit-based real-time recognition pipeline using:
 
-```text
-bdsl49_results/
-```
+* OpenCV
+* MediaPipe Hands
+* TensorFlow/Keras
+* MobileNetV2
+* Streamlit
+* psutil
 
-### Configuration and class information
+The pipeline detects one or two hands, creates a combined bounding box, applies padding, crops the hand region, resizes it to `224 × 224`, applies MobileNetV2 preprocessing, and performs classification.
 
-```text
-classes.json
-class_indices.json
-config.json
-```
-
-These contain the class names, class-index mappings, image size, number of classes, and relevant preprocessing configuration.
-
-### Cross-validation
-
-```text
-cv_results.json
-```
-
-Contains the recorded cross-validation metrics.
-
-### Fold models
-
-```text
-best_fold_1.keras
-best_fold_2.keras
-best_fold_3.keras
-```
-
-### Final model
-
-```text
-final_model.keras
-```
-
-This is the model intended for final evaluation and real-time deployment.
-
-### Evaluation
-
-```text
-test_results.json
-confusion_matrix.png
-```
-
-### Architecture summaries
-
-```text
-model_summary_fold1.txt
-model_summary_fold2.txt
-model_summary_fold3.txt
-final_model_summary.txt
-```
-
----
-
-## 9. Real-Time Streamlit Pipeline
-
-The real-time application is:
-
-```text
-app.py
-```
-
-It combines:
-
-```text
-OpenCV
-MediaPipe Hands
-TensorFlow/Keras
-MobileNetV2
-Streamlit
-psutil
-```
-
-The inference pipeline is:
-
-```text
-Webcam
-   ↓
-Frame capture
-   ↓
-Horizontal flip
-   ↓
-MediaPipe hand detection
-   ↓
-Combined hand bounding box
-   ↓
-Crop + padding
-   ↓
-Resize to 224 × 224
-   ↓
-MobileNetV2 preprocessing
-   ↓
-Model prediction
-   ↓
-Class + confidence
-   ↓
-Streamlit display
-```
-
-The application supports detection of one or two hands and creates a combined bounding box around the detected hand region before classification.
-
----
-
-## 10. Running the Real-Time Application
-
-Place the required deployment files where `app.py` expects them:
-
-```text
-app.py
-final_model.keras
-classes.json
-class_indices.json
-config.json
-```
-
-If the files are inside `bdsl49_results/`, either copy them beside `app.py` or update the paths in `app.py`.
-
-Then run:
+Run:
 
 ```bash
 streamlit run app.py
 ```
 
-Open the local Streamlit address shown in the terminal and allow webcam access.
-
-The application displays:
+Required files:
 
 ```text
-Predicted sign
-Confidence
-FPS
-Latency
-RAM usage
+app.py
+final_model.keras
+classes.json
+class_indices.json
+config.json
 ```
-
-The final session also reports aggregate runtime statistics.
 
 ---
 
-## 11. Real-Time Performance
+## Real-Time Performance
 
-The application measures the complete processing pipeline rather than neural-network inference alone.
+The application reports:
 
-Therefore, reported latency includes operations such as:
+* Predicted class
+* Prediction confidence
+* FPS
+* End-to-end frame-processing latency
+* Current RAM usage
+* Peak RAM usage
 
-```text
-Frame capture
-+ MediaPipe hand detection
-+ Cropping
-+ Image preprocessing
-+ Model inference
-+ Output processing
-```
-
-The runtime metrics include:
-
-```text
-FPS
-End-to-end latency
-Current RAM
-Peak RAM
-```
-
-Actual performance depends on the hardware, operating system, TensorFlow version, camera, and execution environment.
+Session-level statistics include total processed frames, average latency, average operational FPS, and peak RAM.
 
 ---
 
-## 12. Reported Experimental Result
+## Reported Experimental Results
 
-The following values correspond to the reported **Static Two Hand, MobileNetV2, first-50-layers-frozen** experiment:
-
-| Metric                     |    Reported value |
+| Metric                     |            Result |
 | -------------------------- | ----------------: |
-| Classes                    |                49 |
+| Number of classes          |                49 |
 | Architecture               |       MobileNetV2 |
 | Frozen layers              |          First 50 |
-| Input                      |     224 × 224 × 3 |
+| Input size                 |     224 × 224 × 3 |
 | Cross-validation           | 3-fold stratified |
 | Train accuracy             |            99.57% |
 | Validation accuracy        |            97.09% |
@@ -472,142 +205,79 @@ The following values correspond to the reported **Static Two Hand, MobileNetV2, 
 | Average FPS                |                 5 |
 | Average end-to-end latency |          231.3 ms |
 
-These are the reported results for the supplied experiment, not guaranteed values for every reproduction. Hardware, software versions, random seeds, and execution environments can affect the results.
+Latency represents **end-to-end frame-processing latency**, rather than model inference time alone.
 
 ---
 
-## 13. Recommended Reproducibility Information
+## Reproducibility
 
-When reproducing or extending this experiment, record:
+For future experiments, it is recommended to report:
 
 ```text
 Python version
-TensorFlow / Keras version
-CUDA / cuDNN version
-GPU model
-GPU memory
-CPU model
+TensorFlow/Keras version
+CUDA/cuDNN version
+GPU/CPU
 RAM
 Operating system
-Dataset version
+Dataset DOI/version
 Git commit
 Random seed
 Execution platform
 ```
 
-This is particularly important when comparing training results or real-time FPS, latency, and RAM consumption.
+This information helps future researchers reproduce and compare experiments consistently.
 
 ---
 
-## 14. Research Extensions
+## Research Extensions
 
-The repository can be used as a baseline for further experiments, including:
+Possible extensions include:
 
-```text
-Different CNN backbones
-Different numbers of frozen layers
-Alternative augmentation strategies
-Different input resolutions
-Fine-tuning strategies
-TensorFlow Lite / ONNX deployment
-Quantization
-Pruning
-Knowledge distillation
-Detailed real-time profiling
-```
-
-Researchers extending the work should document any changes to the dataset split, preprocessing, model architecture, training configuration, and evaluation protocol.
+* Comparing different pretrained CNN backbones
+* Testing different numbers of frozen MobileNetV2 layers
+* Evaluating alternative augmentation strategies
+* Comparing input resolutions
+* TFLite or ONNX deployment
+* Quantization
+* Pruning
+* Knowledge distillation
+* Detailed inference-time and memory profiling
 
 ---
 
-## 15. Kaggle Reproduction
+## Kaggle Reproduction
 
-A Kaggle notebook is also available as a complementary reference for GPU-based reproduction:
+A Kaggle version of the experiment is available here:
 
-**BdSL49 Updated 2026 — MobileNetV2 Cross Validation**
-
-[https://www.kaggle.com/code/hassan0008jhh/bdsl49-updated-2026-mobilenetv2-crossvalidation](https://www.kaggle.com/code/hassan0008jhh/bdsl49-updated-2026-mobilenetv2-crossvalidation)
-
-The GitHub notebook remains the source implementation. The Kaggle notebook is provided as an additional reproduction environment.
+https://www.kaggle.com/code/hassan0008jhh/bdsl49-updated-2026-mobilenetv2-crossvalidation
 
 ---
+## Ablation study availability
+EfficientNetV2B0: https://www.kaggle.com/code/hassan0008jhh/bdsl49efficientnetv2b0crossvalidation
+Xception: https://www.kaggle.com/code/hassan0008jhh/bdsl49-xception-cross-validation
 
-## 16. Citation and Licenses
+## Citation and Data Availability
 
 ### Dataset
 
-If you use **BdSL49_Updated_2026**, please cite the Zenodo dataset:
+BdSL49_Updated_2026:
 
-```text
-BdSL49_Updated_2026
-DOI: 10.5281/zenodo.22930407
-```
+https://doi.org/10.5281/zenodo.22930407
 
-[https://doi.org/10.5281/zenodo.22930407](https://doi.org/10.5281/zenodo.22930407)
+### Final Model
 
-### Model artifact
+Trained `final_model.keras`:
 
-The final trained model is separately available through Zenodo:
+https://doi.org/10.5281/zenodo.22944642
 
-[https://doi.org/10.5281/zenodo.22944642](https://doi.org/10.5281/zenodo.22944642)
-
-Please follow the license and attribution requirements specified by the corresponding Zenodo records.
-
-### Source code
-
-The repository source code is released under the **MIT License**.
-
-The dataset and source code should be treated as separate licensed resources. Please check the applicable license terms before redistributing either one.
+The GitHub repository contains the training notebook, inference application, configuration files, and requirements. The large trained model is distributed separately through Zenodo.
 
 ---
 
-## 17. Quick Start
+## Contact
 
-For users who are already familiar with the workflow:
-
-```bash
-# 1. Clone repository
-git clone <GITHUB-REPOSITORY-URL>
-cd <REPOSITORY-DIRECTORY>
-
-# 2. Install dependencies
-pip install -r requirements.txt
-
-# 3. Download BdSL49_Updated_2026 from Zenodo
-#    https://doi.org/10.5281/zenodo.22930407
-
-# 4. Extract the dataset as:
-#
-#    bdsl49_updated_2026/
-#        train/
-#        val/
-#        test/
-
-# 5. Run:
-#    mobilentv2_First50FrozenLayers_cross_validation.ipynb
-
-# 6. After training, make the deployment artifacts
-#    available to app.py:
-#
-#    final_model.keras
-#    classes.json
-#    class_indices.json
-#    config.json
-
-# 7. Start the real-time application
-streamlit run app.py
-```
-
----
-
-## 18. Contact
-
-For reproducibility issues, implementation questions, or problems running the pipeline:
+For questions, reproducibility issues, or research collaboration:
 
 **Mehedi**
-**Email:** [mehedi3128.mhd@gmail.com](mailto:mehedi3128.mhd@gmail.com)
-
-When reporting an issue, please include the operating system, Python/TensorFlow version, relevant error message, and the step where the problem occurred.
-
-```
-```
+Email: `mehedi3128.mhd@gmail.com`
