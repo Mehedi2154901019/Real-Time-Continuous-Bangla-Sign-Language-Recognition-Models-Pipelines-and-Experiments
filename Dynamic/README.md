@@ -639,6 +639,8 @@ These experiments are provided for researchers who want to investigate the contr
 
 ---
 
+## Architecture Level Baseline Study
+The 'standalone_temporal_cnn.ipynb' and 'transformer_encoder.ipynb' file contains codes for their respective architectures to compare architecture level baseline comparison with the mentioned 'Conv1D-BiLSTM-Attention' model in '120frames_130values.ipynb'.
 # Recommended Project Structure
 
 A complete working directory can be organized as:
