@@ -446,6 +446,10 @@ and reused by the real-time application.
 
 ---
 
+---
+The '120frames_120values.ipynb' file consists detailed training code with all evaluation metrics including raw normalized confusion matrix values and figures.
+---
+
 # Reproducibility
 
 Because the original video dataset cannot currently be distributed publicly, reproducibility is provided through the complete processing and training pipeline.
